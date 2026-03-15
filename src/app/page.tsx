@@ -196,7 +196,7 @@ export default function HomePage() {
                       </div>
                       <div className="flex gap-1.5">
                         <a href={`https://api.whatsapp.com/send?phone=918307396042&text=${encodeURIComponent(`Hi, I am interested in ${p.name}`)}`}
-                          target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+                          target="_blank" rel="noopener noreferrer"
                           className="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white text-[11px] font-semibold px-2.5 py-1.5 rounded-xl transition-colors no-underline">
                           <Phone size={11} />Chat
                         </a>
