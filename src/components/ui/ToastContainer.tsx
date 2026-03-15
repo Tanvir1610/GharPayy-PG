@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
 
 interface Toast {
   id: string;
@@ -23,25 +22,43 @@ export function toast(t: Omit<Toast, 'id'>) {
 
 export default function ToastContainer() {
   const [toasts, setToasts] = useState<Toast[]>([]);
-  useEffect(() => { _setToasts = setToasts; return () => { _setToasts = null; }; }, []);
+  useEffect(() => {
+    _setToasts = setToasts;
+    return () => { _setToasts = null; };
+  }, []);
 
   return (
-    <div className="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 w-80">
+    <div style={{ position: 'fixed', bottom: 16, right: 16, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 8, width: 320 }}>
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={cn(
-            'rounded-xl px-4 py-3 shadow-lg text-sm font-medium transition-all animate-in slide-in-from-bottom-2',
-            t.variant === 'destructive' && 'bg-red-600 text-white',
-            t.variant === 'success' && 'bg-green-600 text-white',
-            (!t.variant || t.variant === 'default') && 'bg-dark text-white'
-          )}
-          style={{ background: t.variant === 'destructive' ? '#dc2626' : t.variant === 'success' ? '#16a34a' : '#0e0c0a' }}
+          style={{
+            background:
+              t.variant === 'destructive' ? '#dc2626' :
+              t.variant === 'success'     ? '#16a34a' : '#0e0c0a',
+            color: '#fff',
+            borderRadius: 12,
+            padding: '12px 16px',
+            fontSize: 14,
+            fontWeight: 500,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+            animation: 'ghToastIn 0.2s ease',
+          }}
         >
           <p>{t.title}</p>
-          {t.description && <p className="mt-0.5 opacity-80 font-normal text-xs">{t.description}</p>}
+          {t.description && (
+            <p style={{ marginTop: 2, opacity: 0.8, fontWeight: 400, fontSize: 12 }}>
+              {t.description}
+            </p>
+          )}
         </div>
       ))}
+      <style>{`
+        @keyframes ghToastIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
