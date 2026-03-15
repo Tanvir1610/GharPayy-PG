@@ -1,8 +1,6 @@
-import { createServerClient, type CookieMethodsServer } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
-
-type CookieToSet = Parameters<CookieMethodsServer['setAll']>[0][number];
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -12,14 +10,16 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet: CookieToSet[]) {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options as Parameters<typeof cookieStore.set>[2])
             );
           } catch {
-            // Server Component — cookies can't be set here, safe to ignore
+            // Server Component — safe to ignore
           }
         },
       },
@@ -27,7 +27,6 @@ export async function createClient() {
   );
 }
 
-/** Admin client — bypasses RLS. Only use in trusted API routes. */
 export function createAdminClient() {
   return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
