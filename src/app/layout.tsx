@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/hooks/useAuth';
 import ToastContainer from '@/components/ui/ToastContainer';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 export const metadata: Metadata = {
   title: 'GharPayy – Find Your Perfect PG',
@@ -12,10 +13,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          {children}
-          <ToastContainer />
-        </AuthProvider>
+        <ErrorBoundary>
+          <AuthProvider>
+            {children}
+            <ToastContainer />
+          </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

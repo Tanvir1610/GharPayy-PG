@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
 import type { User, SupabaseClient } from '@supabase/supabase-js';
 
 export interface AuthUser {
@@ -24,13 +25,20 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Helper — get supabase lazily, only when actually needed (always client-side)
-function getSupabase(): SupabaseClient | null {
+// Create Supabase client safely — only in browser, only when env vars exist
+function getSB(): SupabaseClient | null {
   if (typeof window === 'undefined') return null;
-  // Dynamic require so this module is never evaluated server-side
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { createClient } = require('@/lib/supabase/client');
-  return createClient();
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+  return createBrowserClient(url, key);
+}
+
+// Module-level singleton so we don't recreate on every render
+let _sb: SupabaseClient | null = null;
+function getClient(): SupabaseClient | null {
+  if (!_sb) _sb = getSB();
+  return _sb;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -38,15 +46,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const buildUser = useCallback(async (sbUser: User): Promise<AuthUser> => {
-    const supabase = getSupabase();
-    if (!supabase) return { id: sbUser.id, email: sbUser.email ?? '', fullName: '', role: 'tenant' };
-
-    const { data: profile } = await supabase
+    const sb = getClient();
+    if (!sb) return { id: sbUser.id, email: sbUser.email ?? '', fullName: '', role: 'tenant' };
+    const { data: profile } = await sb
       .from('profiles')
       .select('full_name, role, phone, avatar_url')
       .eq('id', sbUser.id)
       .single();
-
     return {
       id: sbUser.id,
       email: sbUser.email ?? '',
@@ -58,56 +64,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshUser = useCallback(async () => {
-    const supabase = getSupabase();
-    if (!supabase) return;
-    const { data: { user: sbUser } } = await supabase.auth.getUser();
+    const sb = getClient();
+    if (!sb) return;
+    const { data: { user: sbUser } } = await sb.auth.getUser();
     if (sbUser) setUser(await buildUser(sbUser));
     else setUser(null);
   }, [buildUser]);
 
   useEffect(() => {
-    // This only runs in the browser — never during SSR/build
-    const supabase = getSupabase();
-    if (!supabase) { setLoading(false); return; }
+    const sb = getClient();
+    if (!sb) { setLoading(false); return; }
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    sb.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) setUser(await buildUser(session.user));
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (session?.user) setUser(await buildUser(session.user));
-        else setUser(null);
-      }
-    );
+    const { data: { subscription } } = sb.auth.onAuthStateChange(async (_e, session) => {
+      if (session?.user) setUser(await buildUser(session.user));
+      else setUser(null);
+    });
 
     return () => subscription.unsubscribe();
   }, [buildUser]);
 
   const signUp = async (email: string, password: string, fullName: string, role: 'tenant' | 'owner' = 'tenant') => {
-    const supabase = getSupabase();
-    if (!supabase) return { error: new Error('Not available') };
-    const { error } = await supabase.auth.signUp({
-      email, password,
-      options: { data: { full_name: fullName, role } },
-    });
+    const sb = getClient();
+    if (!sb) return { error: new Error('Supabase not initialised') };
+    const { error } = await sb.auth.signUp({ email, password, options: { data: { full_name: fullName, role } } });
     return { error: error ? new Error(error.message) : null };
   };
 
   const signIn = async (email: string, password: string) => {
-    const supabase = getSupabase();
-    if (!supabase) return { error: new Error('Not available') };
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const sb = getClient();
+    if (!sb) return { error: new Error('Supabase not initialised') };
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
     if (error) return { error: new Error(error.message) };
     if (data.user) setUser(await buildUser(data.user));
     return { error: null };
   };
 
   const signOut = async () => {
-    const supabase = getSupabase();
-    if (!supabase) return;
-    await supabase.auth.signOut();
+    const sb = getClient();
+    if (!sb) return;
+    await sb.auth.signOut();
     setUser(null);
   };
 
