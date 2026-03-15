@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { ok, err } from '@/lib/api';
+import { KORAMANGALA_PROPERTIES } from '@/lib/koramangalaData';
 
 export async function GET() {
   try {
@@ -11,10 +12,13 @@ export async function GET() {
       .eq('area', 'Koramangala')
       .order('average_rating', { ascending: false });
 
-    if (error) return err(error.message, 400);
-    return ok(data ?? []);
-  } catch (e: unknown) {
-    console.error(e);
-    return err('Server error', 500);
+    // If Supabase has data — return it. Otherwise fall back to static scraped data.
+    if (!error && data && data.length > 0) {
+      return ok(data);
+    }
+
+    return ok(KORAMANGALA_PROPERTIES);
+  } catch {
+    return ok(KORAMANGALA_PROPERTIES);
   }
 }

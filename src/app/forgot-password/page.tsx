@@ -15,10 +15,22 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // In a real app, call /api/auth/forgot-password
-    await new Promise(r => setTimeout(r, 800));
-    setSent(true);
-    toast({ title: 'Reset link sent!', description: 'Check your inbox.', variant: 'success' });
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const json = await res.json();
+      if (!json.success) {
+        toast({ title: 'Error', description: json.error, variant: 'destructive' });
+      } else {
+        setSent(true);
+        toast({ title: 'Reset link sent!', description: 'Check your inbox.', variant: 'success' });
+      }
+    } catch {
+      toast({ title: 'Network error', description: 'Please try again.', variant: 'destructive' });
+    }
     setLoading(false);
   };
 

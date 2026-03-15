@@ -195,7 +195,7 @@ function PropertyCard({ p }: { p: Property }) {
               <p className="text-lg font-bold text-dark">₹{(p.min_rent/1000).toFixed(0)}K<span className="text-xs font-normal text-[#7a7167]">/mo</span></p>
             </div>
             <div className="flex gap-1.5">
-              <a href={`https://api.whatsapp.com/send?phone=918307396042&text=${encodeURIComponent(`Hi, I am interested in ${p.name}`)}`}                
+              <a href={`https://api.whatsapp.com/send?phone=918307396042&text=${encodeURIComponent(`Hi, I am interested in ${p.name}`)}`}
                 target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-3 py-2 rounded-xl transition-colors no-underline">
                 <Phone size={12} />Chat
