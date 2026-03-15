@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { TenantSidebar } from '@/components/dashboard/Sidebars';
-import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardContent, Badge, type BadgeVariant } from '@/components/ui/Card';
 import { Calendar, Eye, Heart, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
@@ -42,7 +42,7 @@ export default function TenantDashboardPage() {
     { title: 'Unread Messages', value: stats.messages, icon: MessageSquare, href: '/dashboard/messages', color: 'text-green-600' },
   ];
 
-  const sv = (s: string) => s === 'confirmed' ? 'success' : s === 'pending' ? 'warning' : s === 'cancelled' ? 'danger' : 'secondary' as 'success' | 'warning' | 'danger' | 'secondary';
+  const sv = (s: string): BadgeVariant => s === 'confirmed' ? 'success' : s === 'pending' ? 'warning' : s === 'cancelled' ? 'danger' : 'secondary';
 
   return (
     <DashboardLayout sidebar={<TenantSidebar />} title="My Dashboard">

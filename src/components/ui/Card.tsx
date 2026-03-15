@@ -24,7 +24,7 @@ export function CardContent({ className, children, ...props }: React.HTMLAttribu
 
 // ── Badge ─────────────────────────────────────────────────────────────────────
 
-type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'outline' | 'secondary';
+export type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'outline' | 'secondary';
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;

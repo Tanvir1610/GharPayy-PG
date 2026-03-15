@@ -2,14 +2,14 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { TenantSidebar } from '@/components/dashboard/Sidebars';
-import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardContent, Badge, type BadgeVariant } from '@/components/ui/Card';
 import { Eye, MapPin, Calendar } from 'lucide-react';
 
 interface Visit {
   id: string; status: string; visit_date: string; visit_time: string;
   property: { name: string; city: string };
 }
-const sv = (s: string) => s==='scheduled'?'warning':s==='completed'?'success':'danger' as 'warning'|'success'|'danger';
+const sv = (s: string): BadgeVariant => s==='scheduled'?'warning':s==='completed'?'success':'danger';
 
 export default function TenantVisitsPage() {
   const [visits, setVisits] = useState<Visit[]>([]);

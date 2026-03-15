@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
@@ -28,19 +28,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
-  const buildUser = useCallback(async (supabaseUser: User): Promise<AuthUser> => {
+  // useMemo ensures the client is only created once, client-side
+  const supabase = useMemo(() => createClient(), []);
+
+  const buildUser = useCallback(async (sbUser: User): Promise<AuthUser> => {
     const { data: profile } = await supabase
       .from('profiles')
       .select('full_name, role, phone, avatar_url')
-      .eq('id', supabaseUser.id)
+      .eq('id', sbUser.id)
       .single();
-
     return {
-      id: supabaseUser.id,
-      email: supabaseUser.email ?? '',
-      fullName: profile?.full_name ?? supabaseUser.user_metadata?.full_name ?? '',
+      id: sbUser.id,
+      email: sbUser.email ?? '',
+      fullName: profile?.full_name ?? sbUser.user_metadata?.full_name ?? '',
       role: (profile?.role ?? 'tenant') as AuthUser['role'],
       phone: profile?.phone ?? undefined,
       avatar: profile?.avatar_url ?? undefined,
@@ -50,32 +51,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshUser = useCallback(async () => {
     const { data: { user: sbUser } } = await supabase.auth.getUser();
     if (sbUser) {
-      const authUser = await buildUser(sbUser);
-      setUser(authUser);
+      setUser(await buildUser(sbUser));
     } else {
       setUser(null);
     }
   }, [supabase, buildUser]);
 
   useEffect(() => {
-    // Initial session
+    // Initial session check
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const authUser = await buildUser(session.user);
-        setUser(authUser);
-      }
+      if (session?.user) setUser(await buildUser(session.user));
       setLoading(false);
     });
 
-    // Auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        const authUser = await buildUser(session.user);
-        setUser(authUser);
-      } else {
-        setUser(null);
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (session?.user) setUser(await buildUser(session.user));
+        else setUser(null);
       }
-    });
+    );
 
     return () => subscription.unsubscribe();
   }, [supabase, buildUser]);
@@ -85,17 +80,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email, password,
       options: { data: { full_name: fullName, role } },
     });
-    if (error) return { error: new Error(error.message) };
-    return { error: null };
+    return { error: error ? new Error(error.message) : null };
   };
 
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { error: new Error(error.message) };
-    if (data.user) {
-      const authUser = await buildUser(data.user);
-      setUser(authUser);
-    }
+    if (data.user) setUser(await buildUser(data.user));
     return { error: null };
   };
 

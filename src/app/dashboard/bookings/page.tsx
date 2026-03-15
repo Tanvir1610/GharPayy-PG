@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { TenantSidebar } from '@/components/dashboard/Sidebars';
-import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardContent, Badge, type BadgeVariant } from '@/components/ui/Card';
 import { Calendar } from 'lucide-react';
 
 interface Booking {
@@ -10,7 +10,7 @@ interface Booking {
   property: { name: string; city: string; photos?: string[] };
   room: { room_type: string; rent: number };
 }
-const sv = (s: string) => s === 'confirmed' ? 'success' : s === 'pending' ? 'warning' : s === 'cancelled' ? 'danger' : 'secondary' as 'success'|'warning'|'danger'|'secondary';
+const sv = (s: string): BadgeVariant => s === 'confirmed' ? 'success' : s === 'pending' ? 'warning' : s === 'cancelled' ? 'danger' : 'secondary';
 
 export default function TenantBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);

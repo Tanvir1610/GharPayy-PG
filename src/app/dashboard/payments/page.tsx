@@ -2,11 +2,11 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { TenantSidebar } from '@/components/dashboard/Sidebars';
-import { Card, CardContent, Badge } from '@/components/ui/Card';
+import { Card, CardContent, Badge, type BadgeVariant } from '@/components/ui/Card';
 import { CreditCard } from 'lucide-react';
 
 interface Booking { id: string; rent: number; status: string; move_in_date: string; property: { name: string; city: string } }
-const sv = (s: string) => s==='confirmed'?'success':s==='pending'?'warning':'secondary' as 'success'|'warning'|'secondary';
+const sv = (s: string): BadgeVariant => s==='confirmed'?'success':s==='pending'?'warning':'secondary';
 
 export default function TenantPaymentsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);

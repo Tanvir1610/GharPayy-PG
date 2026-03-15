@@ -2,14 +2,14 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { OwnerSidebar } from '@/components/dashboard/Sidebars';
-import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardContent, Badge, type BadgeVariant } from '@/components/ui/Card';
 import { Building2, Calendar, Users, IndianRupee } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 
 interface Stats { properties: number; bookings: number; occupancy: number; revenue: number }
 interface Booking { id: string; status: string; move_in_date: string; rent: number; property: { name: string }; room: { room_type: string }; user: { full_name: string } }
-const sv = (s: string) => s==='confirmed'?'success':s==='pending'?'warning':s==='cancelled'?'danger':'secondary' as 'success'|'warning'|'danger'|'secondary';
+const sv = (s: string): BadgeVariant => s==='confirmed'?'success':s==='pending'?'warning':s==='cancelled'?'danger':'secondary';
 
 export default function OwnerDashboardPage() {
   const { user } = useAuth();
