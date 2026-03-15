@@ -1,18 +1,14 @@
 import { createBrowserClient } from '@supabase/ssr';
 
-// Lazily create the client so it's only instantiated in the browser,
-// never during Next.js build-time prerendering.
+// Singleton — only created once in the browser, never at build time
 let _client: ReturnType<typeof createBrowserClient> | null = null;
 
 export function createClient() {
-  if (typeof window === 'undefined') {
-    // Build time / SSR — return a dummy that never gets called
-    // (AuthProvider is 'use client' so its effects never run server-side)
-    return createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'
-    );
-  }
+  // During Next.js build/SSR, window is undefined.
+  // AuthProvider is 'use client' — its effects never actually run server-side,
+  // but the module is still parsed. We return null here and guard in useAuth.
+  if (typeof window === 'undefined') return null as unknown as ReturnType<typeof createBrowserClient>;
+
   if (!_client) {
     _client = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,

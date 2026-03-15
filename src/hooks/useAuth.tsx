@@ -1,8 +1,7 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useMemo } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import type { User } from '@supabase/supabase-js';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import type { User, SupabaseClient } from '@supabase/supabase-js';
 
 export interface AuthUser {
   id: string;
@@ -25,19 +24,29 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper — get supabase lazily, only when actually needed (always client-side)
+function getSupabase(): SupabaseClient | null {
+  if (typeof window === 'undefined') return null;
+  // Dynamic require so this module is never evaluated server-side
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { createClient } = require('@/lib/supabase/client');
+  return createClient();
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // useMemo ensures the client is only created once, client-side
-  const supabase = useMemo(() => createClient(), []);
-
   const buildUser = useCallback(async (sbUser: User): Promise<AuthUser> => {
+    const supabase = getSupabase();
+    if (!supabase) return { id: sbUser.id, email: sbUser.email ?? '', fullName: '', role: 'tenant' };
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('full_name, role, phone, avatar_url')
       .eq('id', sbUser.id)
       .single();
+
     return {
       id: sbUser.id,
       email: sbUser.email ?? '',
@@ -46,25 +55,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       phone: profile?.phone ?? undefined,
       avatar: profile?.avatar_url ?? undefined,
     };
-  }, [supabase]);
+  }, []);
 
   const refreshUser = useCallback(async () => {
+    const supabase = getSupabase();
+    if (!supabase) return;
     const { data: { user: sbUser } } = await supabase.auth.getUser();
-    if (sbUser) {
-      setUser(await buildUser(sbUser));
-    } else {
-      setUser(null);
-    }
-  }, [supabase, buildUser]);
+    if (sbUser) setUser(await buildUser(sbUser));
+    else setUser(null);
+  }, [buildUser]);
 
   useEffect(() => {
-    // Initial session check
+    // This only runs in the browser — never during SSR/build
+    const supabase = getSupabase();
+    if (!supabase) { setLoading(false); return; }
+
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) setUser(await buildUser(session.user));
       setLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.user) setUser(await buildUser(session.user));
@@ -73,9 +83,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     return () => subscription.unsubscribe();
-  }, [supabase, buildUser]);
+  }, [buildUser]);
 
   const signUp = async (email: string, password: string, fullName: string, role: 'tenant' | 'owner' = 'tenant') => {
+    const supabase = getSupabase();
+    if (!supabase) return { error: new Error('Not available') };
     const { error } = await supabase.auth.signUp({
       email, password,
       options: { data: { full_name: fullName, role } },
@@ -84,6 +96,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
+    const supabase = getSupabase();
+    if (!supabase) return { error: new Error('Not available') };
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { error: new Error(error.message) };
     if (data.user) setUser(await buildUser(data.user));
@@ -91,6 +105,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    const supabase = getSupabase();
+    if (!supabase) return;
     await supabase.auth.signOut();
     setUser(null);
   };
