@@ -1,21 +1,17 @@
 import { NextResponse } from 'next/server';
 
-export function ok<T>(data: T, status = 200) {
+export function ok(data: unknown, status = 200) {
   return NextResponse.json({ success: true, data }, { status });
 }
-
 export function err(message: string, status = 400) {
-  return NextResponse.json({ success: false, error: message }, { status });
+  return NextResponse.json({ success: false, message }, { status });
 }
-
 export function unauthorized() {
-  return err('Unauthorized', 401);
+  return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
 }
-
 export function forbidden() {
-  return err('Forbidden', 403);
+  return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
 }
-
 export function notFound(entity = 'Resource') {
-  return err(`${entity} not found`, 404);
+  return NextResponse.json({ success: false, message: `${entity} not found` }, { status: 404 });
 }

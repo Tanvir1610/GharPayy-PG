@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { ok, err, unauthorized, forbidden } from '@/lib/api';
-import { KORAMANGALA_PROPERTIES } from '@/lib/koramangalaData';
+import { ALL_PROPERTIES, searchProperties } from '@/lib/allPropertiesData';
 
 export async function GET(req: NextRequest) {
   try {
@@ -29,10 +29,11 @@ export async function GET(req: NextRequest) {
       return ok({ properties: data, total: count, page, pages: Math.ceil((count ?? 0) / limit) });
     }
 
-    // Fallback: serve static scraped Koramangala properties
-    let staticProps = [...KORAMANGALA_PROPERTIES];
-    if (city) staticProps = staticProps.filter(p => p.city.toLowerCase().includes(city.toLowerCase()) || p.area.toLowerCase().includes(city.toLowerCase()));
-    if (gender && gender !== 'any') staticProps = staticProps.filter(p => p.gender_preference === gender || p.gender_preference === 'any');
+    // Fallback: serve all static properties
+    const staticProps = searchProperties({
+      area: city || undefined,
+      gender: (gender && gender !== 'any') ? (gender as 'male'|'female') : undefined,
+    });
 
     const start = (page - 1) * limit;
     return ok({
@@ -44,7 +45,7 @@ export async function GET(req: NextRequest) {
   } catch (e: unknown) {
     console.error(e);
     // Even on full crash, return static data
-    return ok({ properties: KORAMANGALA_PROPERTIES, total: KORAMANGALA_PROPERTIES.length, page: 1, pages: 1 });
+    return ok({ properties: ALL_PROPERTIES, total: ALL_PROPERTIES.length, page: 1, pages: 1 });
   }
 }
 

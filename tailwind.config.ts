@@ -12,7 +12,7 @@ module.exports = {
         dark: '#0e0c0a',
       },
       fontFamily: {
-        display: ['Georgia', 'serif'],
+        display: ['DM Serif Display', 'Georgia', 'serif'],
         body: ['Inter', 'system-ui', 'sans-serif'],
       },
     },
