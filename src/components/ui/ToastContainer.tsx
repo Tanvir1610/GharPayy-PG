@@ -1,64 +1,51 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
 
-interface Toast {
-  id: string;
-  title: string;
-  description?: string;
-  variant?: 'default' | 'destructive' | 'success';
-}
+interface Toast { id: string; title: string; description?: string; variant?: 'default' | 'destructive' | 'success'; }
 
-let _setToasts: React.Dispatch<React.SetStateAction<Toast[]>> | null = null;
+let addToast: (t: Omit<Toast, 'id'>) => void = () => {};
 
-export function toast(t: Omit<Toast, 'id'>) {
-  if (!_setToasts) return;
-  const id = Math.random().toString(36).slice(2);
-  _setToasts((prev) => [...prev, { ...t, id }]);
-  setTimeout(() => {
-    _setToasts?.((prev) => prev.filter((x) => x.id !== id));
-  }, 4000);
-}
+export function toast(t: Omit<Toast, 'id'>) { addToast(t); }
 
 export default function ToastContainer() {
   const [toasts, setToasts] = useState<Toast[]>([]);
-  useEffect(() => {
-    _setToasts = setToasts;
-    return () => { _setToasts = null; };
+
+  const add = useCallback((t: Omit<Toast, 'id'>) => {
+    const id = Math.random().toString(36).slice(2);
+    setToasts(p => [...p, { ...t, id }]);
+    setTimeout(() => setToasts(p => p.filter(x => x.id !== id)), 4000);
   }, []);
 
+  useEffect(() => { addToast = add; }, [add]);
+
+  const ICON = { default: Info, destructive: AlertCircle, success: CheckCircle };
+  const COLOR = {
+    default: 'bg-white border-[#e8e2d8] text-[#1a1208]',
+    destructive: 'bg-red-50 border-red-200 text-red-800',
+    success: 'bg-green-50 border-green-200 text-green-800',
+  };
+
   return (
-    <div style={{ position: 'fixed', bottom: 16, right: 16, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 8, width: 320 }}>
-      {toasts.map((t) => (
-        <div
-          key={t.id}
-          style={{
-            background:
-              t.variant === 'destructive' ? '#dc2626' :
-              t.variant === 'success'     ? '#16a34a' : '#0e0c0a',
-            color: '#fff',
-            borderRadius: 12,
-            padding: '12px 16px',
-            fontSize: 14,
-            fontWeight: 500,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
-            animation: 'ghToastIn 0.2s ease',
-          }}
-        >
-          <p>{t.title}</p>
-          {t.description && (
-            <p style={{ marginTop: 2, opacity: 0.8, fontWeight: 400, fontSize: 12 }}>
-              {t.description}
-            </p>
-          )}
-        </div>
-      ))}
-      <style>{`
-        @keyframes ghToastIn {
-          from { opacity: 0; transform: translateY(8px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
+    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+      {toasts.map(t => {
+        const variant = t.variant ?? 'default';
+        const Icon = ICON[variant];
+        return (
+          <div key={t.id}
+            className={`flex items-start gap-3 p-4 rounded-xl border shadow-lg pointer-events-auto animate-in slide-in-from-right ${COLOR[variant]}`}>
+            <Icon size={16} className="mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold">{t.title}</p>
+              {t.description && <p className="text-xs mt-0.5 opacity-80">{t.description}</p>}
+            </div>
+            <button onClick={() => setToasts(p => p.filter(x => x.id !== t.id))} className="shrink-0 opacity-60 hover:opacity-100">
+              <X size={14} />
+            </button>
+          </div>
+        );
+      })}
     </div>
   );
 }

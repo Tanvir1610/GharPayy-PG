@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { ok, err, notFound } from '@/lib/api';
-import { KORAMANGALA_PROPERTIES } from '@/lib/koramangalaData';
+import { ALL_PROPERTIES } from '@/lib/allPropertiesData';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -14,31 +14,38 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     ]);
 
     if (error || !prop) {
-      // Try static data fallback for Koramangala properties
-      const staticProp = KORAMANGALA_PROPERTIES.find(p => p.id === id || p.slug === id);
+      const staticProp = ALL_PROPERTIES.find(p => p.id === id || p.slug === id);
       if (!staticProp) return notFound('Property');
 
       return ok({
         property: {
-          id: staticProp.id, name: staticProp.name, address: staticProp.address,
-          city: staticProp.city, description: staticProp.description,
+          id: staticProp.id, name: staticProp.name,
+          address: `${staticProp.locality}, ${staticProp.area}, Bangalore`,
+          city: staticProp.city, area: staticProp.area,
+          description: staticProp.usp,
           genderPreference: staticProp.gender_preference,
-          amenities: staticProp.amenities, rules: 'No smoking inside\nGuests allowed until 10 PM\nMinimum stay: 1 month\nID proof mandatory',
+          amenities: staticProp.amenities, rules: 'No smoking inside. ID proof mandatory. Minimum stay as specified.',
           photos: staticProp.photos, isVerified: staticProp.is_verified,
           averageRating: staticProp.average_rating, totalReviews: staticProp.total_reviews,
           highlights: staticProp.highlights, tier: staticProp.tier,
-          priceRange: staticProp.price_range, minRent: staticProp.min_rent,
+          priceRange: staticProp.price_range, minRent: staticProp.min_rent, maxRent: staticProp.max_rent,
+          mealsIncluded: staticProp.meals_included, foodType: staticProp.food_type,
+          noCurfew: staticProp.no_curfew, minimumStay: staticProp.minimum_stay,
+          securityDeposit: staticProp.security_deposit, utilitiesIncluded: staticProp.utilities_included,
+          nearbyLandmarks: staticProp.nearby_landmarks,
           owner: { fullName: 'GharPayy Team', email: 'hello@gharpayy.com', phone: '+91 83073 96042' },
         },
-        rooms: [
-          { id: `${staticProp.id}-double`, roomType: 'double', totalBeds: 2, occupiedBeds: 1, rent: staticProp.min_rent, amenities: staticProp.amenities.slice(0, 6) },
-          { id: `${staticProp.id}-single`, roomType: 'single', totalBeds: 1, occupiedBeds: 0, rent: staticProp.max_rent, amenities: staticProp.amenities },
-        ],
+        rooms: staticProp.room_types.map((rt, i) => ({
+          id: `${staticProp.id}-${i}`, roomType: rt,
+          totalBeds: rt.includes('Triple') ? 3 : rt.includes('Double') ? 2 : 1,
+          occupiedBeds: 0,
+          rent: i === 0 ? staticProp.min_rent : staticProp.max_rent,
+          amenities: staticProp.amenities.slice(0, 6),
+        })),
       });
     }
 
     const owner = (prop.owner as { full_name: string; email: string; phone: string | null }) ?? {};
-
     return ok({
       property: {
         id: prop.id, name: prop.name ?? '', address: prop.address ?? '',

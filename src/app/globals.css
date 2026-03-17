@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --font-display: Georgia, 'Times New Roman', serif;
+  --font-display: 'DM Serif Display', Georgia, serif;
   --font-body: Inter, system-ui, -apple-system, sans-serif;
   --brand: #c8813a;
   --brand-light: #e09a52;
