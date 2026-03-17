@@ -8,17 +8,22 @@ export async function GET() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return unauthorized();
+
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
     if (profile?.role !== 'admin') return forbidden();
 
     const admin = createAdminClient();
-    const { data, error } = await admin
+    const { data, error, count } = await admin
       .from('properties')
-      .select('*, owner:profiles!owner_id(full_name,email)')
+      .select('*, owner:profiles!owner_id(full_name,email)', { count: 'exact' })
       .order('created_at', { ascending: false });
-    if (error) return err(error.message, 400);
-    return ok(data);
-  } catch { return err('Server error', 500); }
+
+    if (error) return err(error.message);
+    return ok({ properties: data ?? [], total: count ?? 0 });
+  } catch (e) {
+    console.error(e);
+    return err('Server error', 500);
+  }
 }
 
 export async function PATCH(req: NextRequest) {
@@ -26,15 +31,19 @@ export async function PATCH(req: NextRequest) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return unauthorized();
+
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
     if (profile?.role !== 'admin') return forbidden();
 
-    const { propertyId, isVerified } = await req.json();
-    if (!propertyId) return err('propertyId required');
+    const { id, ...updates } = await req.json();
+    if (!id) return err('Property id required');
 
     const admin = createAdminClient();
-    const { data, error } = await admin.from('properties').update({ is_verified: isVerified }).eq('id', propertyId).select().single();
-    if (error) return err(error.message, 400);
+    const { data, error } = await admin.from('properties').update(updates).eq('id', id).select().single();
+    if (error) return err(error.message);
     return ok(data);
-  } catch { return err('Server error', 500); }
+  } catch (e) {
+    console.error(e);
+    return err('Server error', 500);
+  }
 }
