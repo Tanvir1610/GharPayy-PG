@@ -2,6 +2,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Link from 'next/link';
 import { ALL_PROPERTIES } from '@/lib/allPropertiesData';
+import { getPropertyPhotos } from '@/lib/images';
 import {
   MapPin, Phone, Star, Check, ArrowLeft, Wifi, Utensils, Shield,
   Zap, Home, Dumbbell, Wind, Coffee, Car, Tv, BookOpen, Flame,
@@ -53,6 +54,11 @@ export default async function PropertyPage({ params }: Props) {
   const genderColor = p.gender_preference === 'female' ? 'bg-pink-500' : p.gender_preference === 'male' ? 'bg-blue-500' : 'bg-purple-500';
   const genderLabel = p.gender_preference === 'female' ? 'Girls Only' : p.gender_preference === 'male' ? 'Boys Only' : 'Co-ed';
 
+  // Real photos from gharpayy.com
+  const photos = getPropertyPhotos(p.id).length > 0 ? getPropertyPhotos(p.id) : p.photos;
+  const mainPhoto = photos[0];
+  const thumbPhotos = photos.slice(1, 5);
+
   // Related: same area, different property
   const related = ALL_PROPERTIES.filter(x => x.area === p.area && x.id !== p.id).slice(0, 4);
 
@@ -82,24 +88,41 @@ export default async function PropertyPage({ params }: Props) {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left: Main content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Hero image / banner */}
-            <div className="relative h-56 sm:h-72 rounded-2xl overflow-hidden bg-gradient-to-br from-[#1a1208] to-[#2a1d0a]">
-              <div className="absolute inset-0 opacity-30"
-                style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 40%,rgba(200,129,58,0.8) 0%,transparent 70%)' }} />
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-                <div className="text-6xl mb-3">🏠</div>
-                <p className="text-white font-bold text-xl">{p.name}</p>
-                <p className="text-white/60 text-sm mt-1 flex items-center gap-1"><MapPin size={12} />{p.area}, {p.city}</p>
+            {/* Hero image / gallery */}
+            <div className="relative rounded-2xl overflow-hidden bg-[#1a1208]">
+              {/* Main photo */}
+              <div className="relative h-56 sm:h-80">
+                <img
+                  src={mainPhoto}
+                  alt={p.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                <div className="absolute top-4 left-4 flex gap-2">
+                  <span className="bg-emerald-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                    <Check size={9} />Verified
+                  </span>
+                  <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full text-white ${p.tier === 'Classics' ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-white/20'}`}>
+                    {p.tier}
+                  </span>
+                </div>
+                <span className={`absolute bottom-4 left-4 text-[11px] font-semibold px-2.5 py-1 rounded-full text-white ${genderColor}`}>{genderLabel}</span>
+                {photos.length > 1 && (
+                  <span className="absolute bottom-4 right-4 bg-black/50 text-white text-[11px] px-2.5 py-1 rounded-full backdrop-blur-sm">
+                    1 / {photos.length} photos
+                  </span>
+                )}
               </div>
-              <div className="absolute top-4 left-4 flex gap-2">
-                <span className="bg-emerald-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                  <Check size={9} />Verified
-                </span>
-                <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full text-white ${p.tier === 'Classics' ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-white/20'}`}>
-                  {p.tier}
-                </span>
-              </div>
-              <span className={`absolute bottom-4 left-4 text-[11px] font-semibold px-2.5 py-1 rounded-full text-white ${genderColor}`}>{genderLabel}</span>
+              {/* Thumbnail strip */}
+              {thumbPhotos.length > 0 && (
+                <div className="grid grid-cols-4 gap-1 p-1">
+                  {thumbPhotos.map((src, i) => (
+                    <div key={i} className="relative h-20 overflow-hidden rounded-lg bg-[#1a1208]">
+                      <img src={src} alt={`${p.name} photo ${i + 2}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Title + Rating */}

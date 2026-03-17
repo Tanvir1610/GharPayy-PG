@@ -4,17 +4,18 @@ import { ButtonHTMLAttributes, ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   children: ReactNode;
 }
 
 const VARIANT = {
-  primary: 'bg-brand hover:bg-brand-dark text-white',
+  primary:   'bg-brand hover:bg-brand-dark text-white',
   secondary: 'border border-brand text-brand hover:bg-brand hover:text-white',
-  ghost: 'text-[#7a7167] hover:text-[#1a1208] hover:bg-[#f8f5f1]',
-  danger: 'bg-red-500 hover:bg-red-600 text-white',
+  outline:   'border border-[#e8e2d8] text-[#1a1208] hover:border-brand hover:text-brand',
+  ghost:     'text-[#7a7167] hover:text-[#1a1208] hover:bg-[#f8f5f1]',
+  danger:    'bg-red-500 hover:bg-red-600 text-white',
 };
 
 const SIZE = {

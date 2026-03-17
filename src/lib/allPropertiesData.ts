@@ -5,6 +5,10 @@
 //          BTM, Jayanagar, JP Nagar, MG Road, Indiranagar
 // ============================================================
 
+import { PROPERTY_PHOTOS, PHOTOS_BASE } from './images';
+
+const B = PHOTOS_BASE; // short alias
+
 export interface PGProperty {
   id: string;
   slug: string;
@@ -57,6 +61,8 @@ const STD_SAFETY = ['CCTV', 'Security Guard', 'Fire Extinguisher'];
 const STD_COMMON = ['Lounge', 'Gym', 'Pantry', 'Rooftop'];
 
 function pg(overrides: Partial<PGProperty> & Pick<PGProperty, 'id'|'slug'|'name'|'gharpayy_name'|'area'|'locality'|'nearby_landmarks'|'gender_preference'|'min_rent'|'max_rent'>): PGProperty {
+  const id = overrides.id;
+  const photos = PROPERTY_PHOTOS[id] ?? [1,2,3,4].map(n=>`${B}/korvek/${n}.jpg`);
   return {
     city: 'Bangalore',
     target_audience: 'both',
@@ -78,7 +84,7 @@ function pg(overrides: Partial<PGProperty> & Pick<PGProperty, 'id'|'slug'|'name'
     no_curfew: true,
     is_verified: true,
     is_active: true,
-    photos: [],
+    photos,
     average_rating: 4.7,
     total_reviews: 40,
     highlights: ['Meals Included', 'No Curfew', 'Fully Furnished'],

@@ -50,19 +50,25 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div>
-            <h4 className="text-white font-semibold mb-3 text-sm">More Areas</h4>
-            <ul className="space-y-2">
-              {AREAS.slice(6).map(area => (
-                <li key={area}>
-                  <Link href={`/search?area=${encodeURIComponent(area)}`}
-                    className="text-white/50 hover:text-brand transition-colors no-underline text-xs">
-                    PG in {area}
-                  </Link>
+            <div>
+              <h4 className="text-white font-semibold mb-3 text-sm">More Areas</h4>
+              <ul className="space-y-2">
+                {AREAS.slice(6).map(area => (
+                  <li key={area}>
+                    <Link href={`/search?area=${encodeURIComponent(area)}`}
+                      className="text-white/50 hover:text-brand transition-colors no-underline text-xs">
+                      PG in {area}
+                    </Link>
+                  </li>
+                ))}
+                <li className="pt-2 border-t border-white/10 mt-2">
+                  <Link href="/how-it-works" className="text-white/50 hover:text-brand transition-colors no-underline text-xs">How It Works</Link>
                 </li>
-              ))}
-            </ul>
-          </div>
+                <li>
+                  <Link href="/about" className="text-white/50 hover:text-brand transition-colors no-underline text-xs">About GharPayy</Link>
+                </li>
+              </ul>
+            </div>
 
           {/* Contact */}
           <div>

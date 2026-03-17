@@ -8,14 +8,22 @@ export async function GET() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return unauthorized();
+
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
     if (profile?.role !== 'admin') return forbidden();
 
     const admin = createAdminClient();
-    const { data, error } = await admin.from('profiles').select('*').order('created_at', { ascending: false });
-    if (error) return err(error.message, 400);
-    return ok(data);
-  } catch { return err('Server error', 500); }
+    const { data, error, count } = await admin
+      .from('profiles')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false });
+
+    if (error) return err(error.message);
+    return ok({ users: data ?? [], total: count ?? 0 });
+  } catch (e) {
+    console.error(e);
+    return err('Server error', 500);
+  }
 }
 
 export async function PATCH(req: NextRequest) {
@@ -23,19 +31,25 @@ export async function PATCH(req: NextRequest) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return unauthorized();
+
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
     if (profile?.role !== 'admin') return forbidden();
 
-    const { userId, isActive, role } = await req.json();
-    if (!userId) return err('userId required');
-
-    const updates: Record<string, unknown> = {};
-    if (typeof isActive === 'boolean') updates.is_active = isActive;
-    if (role && ['tenant','owner','admin'].includes(role)) updates.role = role;
+    const { id, role } = await req.json();
+    if (!id || !role) return err('id and role are required');
 
     const admin = createAdminClient();
-    const { data, error } = await admin.from('profiles').update(updates).eq('id', userId).select().single();
-    if (error) return err(error.message, 400);
+    const { data, error } = await admin
+      .from('profiles')
+      .update({ role })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) return err(error.message);
     return ok(data);
-  } catch { return err('Server error', 500); }
+  } catch (e) {
+    console.error(e);
+    return err('Server error', 500);
+  }
 }
