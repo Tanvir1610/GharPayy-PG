@@ -7,7 +7,8 @@ import { Menu, X, Phone, MapPin, Search } from 'lucide-react';
 const NAV = [
   { label: 'Browse PGs', href: '/search' },
   { label: 'Koramangala', href: '/koramangala' },
-  { label: 'All Areas', href: '/search' },
+  { label: 'How It Works', href: '/how-it-works' },
+  { label: 'About', href: '/about' },
 ];
 
 export default function Header() {

@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ALL_PROPERTIES, ALL_AREAS, PROPERTY_STATS, type PGProperty } from '@/lib/allPropertiesData';
+import { getPropertyPhotos } from '@/lib/images';
 import { Search, MapPin, Star, Phone, SlidersHorizontal, X, Check, Users, Home, ChevronDown } from 'lucide-react';
 
 const GENDER_OPTIONS = [
@@ -30,6 +31,8 @@ const TYPE_OPTIONS = [
 ];
 
 function PGCard({ pg }: { pg: PGProperty }) {
+  const photos = getPropertyPhotos(pg.id);
+  const mainPhoto = photos[0];
   const genderColor = pg.gender_preference === 'female'
     ? 'bg-pink-500' : pg.gender_preference === 'male'
     ? 'bg-blue-500' : 'bg-purple-500';
@@ -39,23 +42,23 @@ function PGCard({ pg }: { pg: PGProperty }) {
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-[#e8e2d8] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
-      {/* Image placeholder / area banner */}
-      <div className="relative h-44 bg-gradient-to-br from-[#1a1208] to-[#2a1d0a] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 opacity-20"
-          style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(200,129,58,0.6) 0%, transparent 70%)' }} />
-        <div className="relative text-center px-4">
-          <div className="text-4xl mb-2">🏠</div>
-          <p className="text-white/80 text-sm font-medium">{pg.area}</p>
-          <p className="text-white/50 text-xs mt-1">{pg.locality}</p>
-        </div>
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
+      {/* Image */}
+      <div className="relative h-44 bg-[#1a1208] overflow-hidden">
+        {mainPhoto ? (
+          <img src={mainPhoto} alt={pg.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center" style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(200,129,58,0.3) 0%, transparent 70%)' }}>
+            <Home size={32} className="text-white/30" />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="absolute top-3 left-3 flex gap-1.5">
           <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
             <Check size={8} />Verified
           </span>
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-            pg.tier === 'Classics' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white' : 'bg-white/20 text-white'
-          }`}>{pg.tier}</span>
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${pg.tier === 'Classics' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white' : 'bg-white/20 text-white'}`}>
+            {pg.tier}
+          </span>
         </div>
         <div className="absolute bottom-3 left-3">
           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full text-white ${genderColor}`}>{genderLabel}</span>
