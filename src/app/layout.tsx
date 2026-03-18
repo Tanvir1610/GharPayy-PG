@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/hooks/useAuth";
+import { ToastContainer } from "@/components/ui/ToastContainer";
 
 export const metadata: Metadata = {
   title: "GharPayy — PG Lead Matching",
@@ -13,7 +15,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AuthProvider>
+          {children}
+          <ToastContainer />
+        </AuthProvider>
+      </body>
     </html>
   );
 }
