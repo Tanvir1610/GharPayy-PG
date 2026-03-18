@@ -1,126 +1,115 @@
-import Link from 'next/link';
-import { MapPin, Phone, Mail, Instagram, Youtube } from 'lucide-react';
+import Link from "next/link";
+import { Home, Mail, Phone, MapPin, Instagram, Twitter, Linkedin } from "lucide-react";
 
-const AREAS = [
-  'Koramangala', 'Bellandur', 'Marathahalli', 'Mahadevapura',
-  'Nagawara/Manyata', 'Electronic City', 'Whitefield', 'HSR Layout',
-  'BTM Layout', 'JP Nagar', 'Jayanagar', 'MG Road',
-];
+const FOOTER_LINKS = {
+  Product: [
+    { href: "/explore", label: "Find PG" },
+    { href: "/about", label: "About Us" },
+  ],
+  Support: [
+    { href: "/auth", label: "Sign In" },
+    { href: "/explore", label: "Browse Listings" },
+  ],
+};
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0e0c0a] text-white/60 text-sm">
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+    <footer className="border-t border-border bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
           {/* Brand */}
-          <div>
+          <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
-                <MapPin size={15} className="text-white" />
+              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+                <span className="text-accent-foreground font-bold text-sm">G</span>
               </div>
-              <span className="font-display font-bold text-white text-lg">GharPayy</span>
+              <span className="font-semibold text-lg tracking-tight text-foreground">
+                Gharpayy
+              </span>
             </div>
-            <p className="text-white/50 text-xs leading-relaxed mb-4">
-              Bangalore's most trusted PG platform. 120+ verified properties across 12+ areas. Fully furnished, meals included, no brokerage.
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
+              Smarter PG matching for Bangalore. Find verified paying guest
+              accommodations near your workplace or college.
             </p>
-            <div className="flex gap-3">
-              <a href="https://instagram.com/gharpayy" target="_blank" rel="noopener noreferrer"
-                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-brand flex items-center justify-center transition-colors">
-                <Instagram size={14} className="text-white" />
+            <div className="flex items-center gap-4 mt-6">
+              <a
+                href="#"
+                aria-label="Instagram"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Instagram size={18} />
               </a>
-              <a href="https://youtube.com/@gharpayy" target="_blank" rel="noopener noreferrer"
-                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-brand flex items-center justify-center transition-colors">
-                <Youtube size={14} className="text-white" />
+              <a
+                href="#"
+                aria-label="Twitter"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Twitter size={18} />
+              </a>
+              <a
+                href="#"
+                aria-label="LinkedIn"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Linkedin size={18} />
               </a>
             </div>
           </div>
 
-          {/* Areas */}
-          <div>
-            <h4 className="text-white font-semibold mb-3 text-sm">PGs by Area</h4>
-            <ul className="space-y-2">
-              {AREAS.slice(0, 6).map(area => (
-                <li key={area}>
-                  <Link href={`/search?area=${encodeURIComponent(area)}`}
-                    className="text-white/50 hover:text-brand transition-colors no-underline text-xs">
-                    PG in {area}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-            <div>
-              <h4 className="text-white font-semibold mb-3 text-sm">More Areas</h4>
-              <ul className="space-y-2">
-                {AREAS.slice(6).map(area => (
-                  <li key={area}>
-                    <Link href={`/search?area=${encodeURIComponent(area)}`}
-                      className="text-white/50 hover:text-brand transition-colors no-underline text-xs">
-                      PG in {area}
+          {/* Link groups */}
+          {Object.entries(FOOTER_LINKS).map(([title, links]) => (
+            <div key={title}>
+              <h4 className="text-sm font-semibold text-foreground mb-4">{title}</h4>
+              <ul className="space-y-2.5">
+                {links.map(({ href, label }) => (
+                  <li key={href}>
+                    <Link
+                      href={href}
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {label}
                     </Link>
                   </li>
                 ))}
-                <li className="pt-2 border-t border-white/10 mt-2">
-                  <Link href="/how-it-works" className="text-white/50 hover:text-brand transition-colors no-underline text-xs">How It Works</Link>
-                </li>
-                <li>
-                  <Link href="/about" className="text-white/50 hover:text-brand transition-colors no-underline text-xs">About GharPayy</Link>
-                </li>
               </ul>
             </div>
+          ))}
+        </div>
 
-          {/* Contact */}
-          <div>
-            <h4 className="text-white font-semibold mb-3 text-sm">Contact Us</h4>
-            <ul className="space-y-3">
-              <li>
-                <a href="https://api.whatsapp.com/send?phone=918307396042"
-                  target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-white/50 hover:text-green-400 transition-colors no-underline text-xs">
-                  <Phone size={13} />+91 83073 96042
-                </a>
-              </li>
-              <li>
-                <a href="mailto:hello@gharpayy.com"
-                  className="flex items-center gap-2 text-white/50 hover:text-brand transition-colors no-underline text-xs">
-                  <Mail size={13} />hello@gharpayy.com
-                </a>
-              </li>
-              <li className="flex items-start gap-2 text-xs text-white/40">
-                <MapPin size={13} className="mt-0.5 shrink-0" />
-                Koramangala, Bangalore — 560034
-              </li>
-            </ul>
-
-            <div className="mt-5">
-              <p className="text-xs text-white/40 mb-2">Quick Links</p>
-              <div className="flex flex-col gap-1">
-                {[
-                  { label: 'Girls PGs', href: '/search?gender=female' },
-                  { label: 'Boys PGs', href: '/search?gender=male' },
-                  { label: 'Co-ed PGs', href: '/search?gender=any' },
-                  { label: 'Budget PGs', href: '/search?type=budget' },
-                  { label: 'Premium PGs', href: '/search?type=premium' },
-                ].map(({ label, href }) => (
-                  <Link key={label} href={href}
-                    className="text-white/40 hover:text-brand transition-colors no-underline text-xs">
-                    {label}
-                  </Link>
-                ))}
-              </div>
-            </div>
+        {/* Contact row */}
+        <div className="flex flex-wrap gap-6 mb-8 pb-8 border-b border-border">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <MapPin size={14} />
+            <span>Bangalore, Karnataka</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Mail size={14} />
+            <span>hello@gharpayy.com</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Phone size={14} />
+            <span>+91 90000 00000</span>
           </div>
         </div>
 
-        <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-white/30">© 2025 GharPayy. All rights reserved.</p>
-          <div className="flex gap-4 text-xs text-white/30">
-            <span>No Brokerage</span>
-            <span>·</span>
-            <span>120+ Verified PGs</span>
-            <span>·</span>
-            <span>Bangalore</span>
+        {/* Bottom bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground">
+            © {new Date().getFullYear()} Gharpayy. All rights reserved.
+          </p>
+          <div className="flex gap-4">
+            <Link
+              href="#"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              href="#"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Terms of Service
+            </Link>
           </div>
         </div>
       </div>
