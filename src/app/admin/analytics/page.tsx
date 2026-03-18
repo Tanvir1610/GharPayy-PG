@@ -1,99 +1,83 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import DashboardLayout from '@/components/dashboard/DashboardLayout';
-import { AdminSidebar } from '@/components/dashboard/Sidebars';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { BarChart2, TrendingUp, Users, Building2 } from 'lucide-react';
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { BarChart3, TrendingUp, Users, Building2, IndianRupee, Sparkles } from "lucide-react";
 
-interface Stats {
-  totalUsers: number; totalProperties: number; verifiedProperties: number;
-  totalBookings: number; pendingBookings: number; totalReviews: number;
-}
+const METRICS = [
+  { label: "Total Leads", value: "124", change: "+12%", icon: Users, color: "#388bfd" },
+  { label: "Active Properties", value: "48", change: "+3", icon: Building2, color: "#f97316" },
+  { label: "Match Rate", value: "78%", change: "+5%", icon: Sparkles, color: "#3fb950" },
+  { label: "Avg. Budget", value: "₹11.2k", change: "—", icon: IndianRupee, color: "#a371f7" },
+];
+
+const FUNNEL = [
+  { stage: "New Leads", count: 124, pct: 100, color: "#388bfd" },
+  { stage: "Contacted", count: 98, pct: 79, color: "#f97316" },
+  { stage: "Req. Collected", count: 72, pct: 58, color: "#a371f7" },
+  { stage: "Property Suggested", count: 51, pct: 41, color: "#d29922" },
+  { stage: "Visit Scheduled", count: 34, pct: 27, color: "#22c5c2" },
+  { stage: "Booked", count: 18, pct: 15, color: "#3fb950" },
+];
 
 export default function AdminAnalyticsPage() {
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch('/api/admin/stats').then(r => r.json()).then(j => {
-      setStats(j.data);
-      setLoading(false);
-    });
-  }, []);
-
-  const verifyRate = stats && stats.totalProperties > 0
-    ? Math.round((stats.verifiedProperties / stats.totalProperties) * 100) : 0;
-  const confirmRate = stats && stats.totalBookings > 0
-    ? Math.round(((stats.totalBookings - stats.pendingBookings) / stats.totalBookings) * 100) : 0;
-
-  const metrics = [
-    { label: 'Total Users', value: stats?.totalUsers ?? 0, icon: Users, color: 'text-blue-500' },
-    { label: 'Total Properties', value: stats?.totalProperties ?? 0, icon: Building2, color: 'text-brand' },
-    { label: 'Total Bookings', value: stats?.totalBookings ?? 0, icon: TrendingUp, color: 'text-green-600' },
-    { label: 'Total Reviews', value: stats?.totalReviews ?? 0, icon: BarChart2, color: 'text-purple-500' },
-  ];
-
   return (
-    <DashboardLayout sidebar={<AdminSidebar />} title="Analytics">
-      <div className="space-y-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {metrics.map((m) => (
-            <Card key={m.label}>
-              <CardContent className="pt-5">
-                <m.icon size={20} className={`${m.color} mb-3`} />
-                <p className="text-xs text-[#7a7167] font-medium">{m.label}</p>
-                <p className="text-3xl font-bold text-dark mt-1">{loading ? '—' : m.value}</p>
-              </CardContent>
-            </Card>
+    <DashboardLayout title="Analytics" subtitle="Lead pipeline and property matching overview">
+      {/* Metric cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 28 }}>
+        {METRICS.map(({ label, value, change, icon: Icon, color }) => (
+          <div key={label} style={{ padding: "18px 20px", borderRadius: 12, background: "#0d1117", border: "1px solid #21262d" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <Icon size={15} color={color} />
+              <span style={{ fontSize: 11, color: "#6e7681", fontWeight: 500 }}>{label}</span>
+            </div>
+            <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 26, fontWeight: 800, color, lineHeight: 1 }}>{value}</div>
+            <div style={{ fontSize: 11, color: "#484f58", marginTop: 4 }}>{change} this month</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Pipeline funnel */}
+      <div style={{ padding: "24px", borderRadius: 12, background: "#0d1117", border: "1px solid #21262d", marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
+          <BarChart3 size={16} color="#f97316" />
+          <span style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, color: "#e6edf3", fontSize: 15 }}>Lead Pipeline Funnel</span>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {FUNNEL.map(({ stage, count, pct, color }) => (
+            <div key={stage}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#8b949e", marginBottom: 4 }}>
+                <span>{stage}</span>
+                <span style={{ color, fontWeight: 600 }}>{count} ({pct}%)</span>
+              </div>
+              <div style={{ height: 8, background: "#161b22", borderRadius: 4, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 4, transition: "width 0.8s ease" }} />
+              </div>
+            </div>
           ))}
         </div>
+      </div>
 
-        <div className="grid sm:grid-cols-2 gap-4">
-          <Card>
-            <CardHeader><CardTitle>Property Verification Rate</CardTitle></CardHeader>
-            <CardContent>
-              <div className="flex items-end justify-between mb-2">
-                <span className="text-4xl font-bold text-dark">{verifyRate}%</span>
-                <span className="text-sm text-[#7a7167]">{stats?.verifiedProperties} / {stats?.totalProperties} verified</span>
-              </div>
-              <div className="h-3 bg-[#f5f0eb] rounded-full overflow-hidden">
-                <div className="h-full bg-green-500 rounded-full transition-all duration-700" style={{ width: `${verifyRate}%` }} />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader><CardTitle>Booking Confirmation Rate</CardTitle></CardHeader>
-            <CardContent>
-              <div className="flex items-end justify-between mb-2">
-                <span className="text-4xl font-bold text-dark">{confirmRate}%</span>
-                <span className="text-sm text-[#7a7167]">{stats?.pendingBookings} pending</span>
-              </div>
-              <div className="h-3 bg-[#f5f0eb] rounded-full overflow-hidden">
-                <div className="h-full bg-brand rounded-full transition-all duration-700" style={{ width: `${confirmRate}%` }} />
-              </div>
-            </CardContent>
-          </Card>
+      {/* Top locations */}
+      <div style={{ padding: "24px", borderRadius: 12, background: "#0d1117", border: "1px solid #21262d" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
+          <TrendingUp size={16} color="#3fb950" />
+          <span style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, color: "#e6edf3", fontSize: 15 }}>Top Demanded Areas</span>
         </div>
-
-        <Card>
-          <CardHeader><CardTitle>Platform Summary</CardTitle></CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {[
-                { label: 'Avg Properties / Owner', value: stats ? (stats.totalProperties / Math.max(stats.totalUsers, 1)).toFixed(1) : '—' },
-                { label: 'Pending Bookings', value: stats?.pendingBookings ?? '—' },
-                { label: 'Unverified Properties', value: stats ? stats.totalProperties - stats.verifiedProperties : '—' },
-              ].map((s) => (
-                <div key={s.label} className="p-4 bg-[#f8f5f1] rounded-xl">
-                  <p className="text-xs text-[#7a7167]">{s.label}</p>
-                  <p className="text-2xl font-bold text-dark mt-1">{loading ? '—' : s.value}</p>
-                </div>
-              ))}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
+          {[
+            { area: "Koramangala", leads: 34, color: "#f97316" },
+            { area: "Indiranagar", leads: 28, color: "#388bfd" },
+            { area: "HSR Layout", leads: 21, color: "#3fb950" },
+            { area: "Whitefield", leads: 19, color: "#a371f7" },
+            { area: "Marathahalli", leads: 14, color: "#d29922" },
+            { area: "BTM Layout", leads: 8, color: "#22c5c2" },
+          ].map(({ area, leads, color }) => (
+            <div key={area} style={{ padding: "12px 14px", borderRadius: 8, background: "#161b22", border: "1px solid #21262d", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 13, color: "#8b949e" }}>{area}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color }}>{leads}</span>
             </div>
-          </CardContent>
-        </Card>
+          ))}
+        </div>
       </div>
     </DashboardLayout>
   );
