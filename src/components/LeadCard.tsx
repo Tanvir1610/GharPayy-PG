@@ -9,12 +9,10 @@ import {
   User,
   Sparkles,
   CheckCircle2,
+  Calendar,
 } from "lucide-react";
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; cls: string }
-> = {
+const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
   new: { label: "New", cls: "status-new" },
   contacted: { label: "Contacted", cls: "status-contacted" },
   requirement_collected: { label: "Req. Collected", cls: "status-req" },
@@ -38,6 +36,12 @@ const GENDER_LABEL: Record<string, string> = {
   unisex: "Any",
 };
 
+const GENDER_COLOR: Record<string, string> = {
+  male: "#388bfd",
+  female: "#f472b6",
+  unisex: "#a371f7",
+};
+
 interface Props {
   lead: Lead;
   onFindMatch: (lead: Lead) => void;
@@ -53,15 +57,20 @@ export default function LeadCard({
   isAssigned,
   assignedPropertyName,
 }: Props) {
-  const status = STATUS_CONFIG[lead.status] || {
-    label: lead.status,
-    cls: "status-new",
-  };
+  const status = STATUS_CONFIG[lead.status] || { label: lead.status, cls: "status-new" };
+
+  // Deterministic color from name
+  const hue = (lead.name.charCodeAt(0) * 37 + lead.name.charCodeAt(1) * 13) % 360;
 
   return (
     <div
       className="card card-hover"
-      style={{ padding: "18px 20px", transition: "all 0.2s" }}
+      style={{
+        padding: "18px 20px",
+        transition: "all 0.2s",
+        borderColor: isAssigned ? "rgba(63,185,80,0.3)" : undefined,
+        background: isAssigned ? "rgba(63,185,80,0.03)" : undefined,
+      }}
     >
       {/* Header row */}
       <div
@@ -80,14 +89,14 @@ export default function LeadCard({
               width: 40,
               height: 40,
               borderRadius: "50%",
-              background: `hsl(${(lead.name.charCodeAt(0) * 37) % 360}, 40%, 25%)`,
-              border: `2px solid hsl(${(lead.name.charCodeAt(0) * 37) % 360}, 60%, 40%)`,
+              background: `hsl(${hue}, 40%, 20%)`,
+              border: `2px solid hsl(${hue}, 60%, 35%)`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 15,
               fontWeight: 700,
-              color: `hsl(${(lead.name.charCodeAt(0) * 37) % 360}, 80%, 75%)`,
+              color: `hsl(${hue}, 80%, 72%)`,
               flexShrink: 0,
             }}
           >
@@ -116,56 +125,55 @@ export default function LeadCard({
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
           <span className={`badge ${status.cls}`}>{status.label}</span>
-          <span
-            style={{
-              fontSize: 11,
-              color: "#484f58",
-              background: "#161b22",
-              padding: "2px 8px",
-              borderRadius: 4,
-            }}
-          >
-            {lead.source}
-          </span>
         </div>
       </div>
 
-      {/* Details row */}
+      {/* Details grid */}
       <div
         style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 16,
-          marginBottom: 16,
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "8px 0",
+          marginBottom: 14,
+          padding: "10px 12px",
+          background: "#0d1117",
+          borderRadius: 8,
+          border: "1px solid #161b22",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <MapPin size={12} color="#f97316" />
-          <span style={{ fontSize: 12, color: "#8b949e" }}>
-            {lead.preferredLocation}
-          </span>
+          <MapPin size={11} color="#f97316" />
+          <span style={{ fontSize: 12, color: "#8b949e" }}>{lead.preferredLocation}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <IndianRupee size={12} color="#3fb950" />
+          <IndianRupee size={11} color="#3fb950" />
           <span style={{ fontSize: 12, color: "#8b949e" }}>
             ₹{lead.budgetMin.toLocaleString()}–{lead.budgetMax.toLocaleString()}
-            /mo
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <Bed size={12} color="#388bfd" />
-          <span style={{ fontSize: 12, color: "#8b949e" }}>
-            {ROOM_LABEL[lead.roomType]}
-          </span>
+          <Bed size={11} color="#388bfd" />
+          <span style={{ fontSize: 12, color: "#8b949e" }}>{ROOM_LABEL[lead.roomType]}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <User size={12} color="#a371f7" />
-          <span style={{ fontSize: 12, color: "#8b949e" }}>
-            {GENDER_LABEL[lead.genderPreference]}
-          </span>
+          <User size={11} color={GENDER_COLOR[lead.genderPreference] ?? "#a371f7"} />
+          <span style={{ fontSize: 12, color: "#8b949e" }}>{GENDER_LABEL[lead.genderPreference]}</span>
         </div>
+        {lead.moveInDate && (
+          <div style={{ display: "flex", alignItems: "center", gap: 5, gridColumn: "span 2" }}>
+            <Calendar size={11} color="#d29922" />
+            <span style={{ fontSize: 12, color: "#8b949e" }}>
+              Move-in:{" "}
+              {new Date(lead.moveInDate).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Assigned banner */}
@@ -175,8 +183,8 @@ export default function LeadCard({
             display: "flex",
             alignItems: "center",
             gap: 8,
-            padding: "8px 12px",
-            borderRadius: 8,
+            padding: "7px 11px",
+            borderRadius: 7,
             background: "rgba(63,185,80,0.1)",
             border: "1px solid rgba(63,185,80,0.25)",
             marginBottom: 12,
@@ -193,20 +201,21 @@ export default function LeadCard({
       {lead.notes && (
         <div
           style={{
-            fontSize: 12,
+            fontSize: 11,
             color: "#6e7681",
-            marginBottom: 14,
-            padding: "8px 10px",
+            marginBottom: 12,
+            padding: "7px 10px",
             background: "#161b22",
             borderRadius: 6,
-            borderLeft: "3px solid #30363d",
+            borderLeft: "2px solid #30363d",
+            lineHeight: 1.5,
           }}
         >
           {lead.notes}
         </div>
       )}
 
-      {/* Action */}
+      {/* Footer */}
       <div
         style={{
           display: "flex",
@@ -214,12 +223,27 @@ export default function LeadCard({
           justifyContent: "space-between",
         }}
       >
-        <span style={{ fontSize: 11, color: "#484f58" }}>
-          {new Date(lead.createdAt).toLocaleDateString("en-IN", {
-            day: "numeric",
-            month: "short",
-          })}
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span
+            style={{
+              fontSize: 10,
+              color: "#484f58",
+              background: "#161b22",
+              padding: "2px 7px",
+              borderRadius: 4,
+              border: "1px solid #21262d",
+            }}
+          >
+            {lead.source}
+          </span>
+          <span style={{ fontSize: 11, color: "#484f58" }}>
+            {new Date(lead.createdAt).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+            })}
+          </span>
+        </div>
+
         <button
           className="btn btn-primary"
           onClick={() => onFindMatch(lead)}
@@ -228,6 +252,11 @@ export default function LeadCard({
             fontSize: 12,
             padding: "7px 14px",
             opacity: isMatching ? 0.7 : 1,
+            background: isAssigned
+              ? "rgba(63,185,80,0.15)"
+              : "linear-gradient(135deg, #f97316, #ea580c)",
+            color: isAssigned ? "#3fb950" : "#fff",
+            border: isAssigned ? "1px solid rgba(63,185,80,0.3)" : "none",
           }}
         >
           {isMatching ? (
@@ -248,16 +277,14 @@ export default function LeadCard({
           ) : (
             <>
               <Sparkles size={12} />
-              Find Match
+              {isAssigned ? "Re-match" : "Find Match"}
             </>
           )}
         </button>
       </div>
 
-      <style jsx>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );
