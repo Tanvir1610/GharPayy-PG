@@ -3,16 +3,14 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, Home, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/ToastContainer';
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
 
 export default function SignupPage() {
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [fullName, setFullName]   = useState('');
+  const [email, setEmail]         = useState('');
+  const [password, setPassword]   = useState('');
   const [confirmPw, setConfirmPw] = useState('');
   const [role, setRole] = useState<'tenant' | 'owner'>('tenant');
   const [showPw, setShowPw] = useState(false);
@@ -121,9 +119,14 @@ export default function SignupPage() {
               placeholder="Re-enter password" value={confirmPw}
               onChange={(e) => setConfirmPw(e.target.value)} icon={Lock} required />
 
-            <Button type="submit" loading={loading} className="w-full !mt-6" size="lg">
-              {loading ? 'Creating account…' : 'Create Account'}
-            </Button>
+            <button type="submit" disabled={loading || (!!confirmPw && password !== confirmPw)}
+              style={{ width: '100%', padding: '12px', background: loading ? '#ea580c99' : 'linear-gradient(135deg, #f97316, #ea580c)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              {loading ? (
+                <><div style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> Creating account…</>
+              ) : (
+                <>Create Account <ArrowRight size={16} /></>
+              )}
+            </button>
           </form>
 
           <p className="text-center text-xs mt-4" style={{ color: '#7a7167' }}>
@@ -137,6 +140,7 @@ export default function SignupPage() {
           </p>
         </div>
       </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

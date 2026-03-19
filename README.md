@@ -1,133 +1,160 @@
-# GharPayy — Next.js 15 + Supabase
+# GharPayy — PG Lead Matching Dashboard
 
-## ⚡ Deploy to Vercel in 5 Steps
-
-### Step 1 — Create Supabase Project (free)
-1. Go to **https://supabase.com** → New Project
-2. Open **SQL Editor** → New Query → paste the full contents of `supabase/schema.sql` → **Run**
-3. Go to **Project Settings → API** and copy:
-   - Project URL
-   - `anon` public key
-   - `service_role` secret key
-
-### Step 2 — Push this project to GitHub
-```bash
-cd gharpayy-final
-git init
-git add .
-git commit -m "initial"
-git remote add origin https://github.com/YOUR_USERNAME/gharpayy.git
-git push -u origin main
-```
-
-### Step 3 — Import to Vercel
-1. Go to **https://vercel.com/new** → Import your GitHub repo
-2. Add these **Environment Variables**:
-   ```
-   NEXT_PUBLIC_SUPABASE_URL       = https://xxxx.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY  = eyJhb...
-   SUPABASE_SERVICE_ROLE_KEY      = eyJhb...
-   ```
-3. Click **Deploy** — build will succeed with zero errors ✅
-
-### Step 4 — Seed Koramangala Properties
-After deploy, run locally (with your prod env vars):
-
-1. Sign up at `your-app.vercel.app/signup` with role **Owner**
-2. Go to **Supabase Dashboard → Authentication → Users** → copy your User UUID
-3. Run:
-```bash
-NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co \
-SUPABASE_SERVICE_ROLE_KEY=eyJhb... \
-SEED_OWNER_ID=your-owner-uuid \
-npx tsx src/scripts/seedKoramangala.ts
-```
-4. Visit `your-app.vercel.app/koramangala` — 20 properties with real photos ✅
+A full-stack Next.js 14 App Router dashboard for managing PG (Paying Guest) leads and matching them to properties using a scoring engine.
 
 ---
 
-## Local Development
+## 🚀 Quick Start
+
+### 1. Install dependencies
+
 ```bash
 npm install
-cp .env.example .env.local
-# Fill in your Supabase keys in .env.local
-npm run dev
-# Open http://localhost:3000
 ```
+
+### 2. Configure environment variables
+
+Copy the example file and fill in your Supabase credentials:
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+### 3. Set up Supabase
+
+In your Supabase SQL editor, run the contents of `supabase/schema.sql`. This creates:
+- A `profiles` table linked to `auth.users`
+- Row-level security policies
+- A trigger that auto-creates a profile on signup
+
+### 4. Run the dev server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## Tech Stack
+## 📐 Architecture
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 15 (App Router) |
-| Language | TypeScript |
-| UI | React 18 + Tailwind CSS |
-| Database | Supabase (PostgreSQL) |
-| Auth | Supabase Auth (email/password) |
-| Sessions | @supabase/ssr (auto cookie handling) |
-| Hosting | Vercel |
-
-## Why It Works on Vercel
-All pages are **static shells** — they contain zero DB calls.  
-Data is fetched by **client components** calling `/api/*` routes.  
-API routes only run at **request time**, never at build time.
-
-```
-page.tsx (static)  →  ClientComponent  →  /api/route  →  Supabase
-```
-
-## Project Structure
 ```
 src/
 ├── app/
-│   ├── api/                  # 20 API route handlers (Supabase queries)
-│   │   ├── auth/             # login, signup, logout, me
-│   │   ├── properties/       # CRUD + detail/[id]
-│   │   ├── bookings/         # list, create, PATCH status
-│   │   ├── visits/           # list, create
-│   │   ├── wishlists/        # toggle save
-│   │   ├── messages/         # list, send
-│   │   ├── koramangala/      # scraped property listings
-│   │   ├── owner/            # stats, properties, rooms, bookings, visits
-│   │   └── admin/            # stats, users, properties
-│   ├── koramangala/          # /koramangala listing page
-│   ├── property/[id]/        # property detail page
-│   ├── dashboard/            # tenant: bookings, visits, wishlist, messages, payments, profile
-│   ├── owner/                # owner: properties, rooms, bookings, visits, analytics
-│   └── admin/                # admin: users, properties, analytics
+│   ├── layout.tsx           # Root layout — AuthProvider + ToastContainer
+│   ├── page.tsx             # Redirects → /dashboard
+│   ├── dashboard/           # Post-login home with stats & quick actions
+│   ├── leads/               # Lead list with filtering + match drawer
+│   ├── properties/          # Property grid with filtering
+│   ├── matching/            # Split-panel: leads list ↔ property matches
+│   ├── login/               # Supabase auth — sign in
+│   ├── signup/              # Supabase auth — sign up (tenant or owner)
+│   └── api/
+│       ├── leads/           # GET all leads
+│       │   └── [id]/        # GET single lead
+│       ├── properties/      # GET all properties
+│       └── match/           # POST { leadId } → scored MatchResult[]
 ├── components/
-│   ├── koramangala/          # KoramangalaClient (fetches + filters)
-│   ├── property/             # PropertyGallery, PropertyInfo, PropertyDetailClient
-│   ├── dashboard/            # DashboardLayout, Sidebars
-│   ├── layout/               # Header, Footer
-│   └── ui/                   # Button, Input, Card, Badge, ToastContainer
-├── lib/
-│   ├── supabase/
-│   │   ├── client.ts         # browser client
-│   │   ├── server.ts         # server client + admin client
-│   │   └── types.ts          # TypeScript types for all tables
-│   ├── api.ts                # ok(), err(), unauthorized() helpers
-│   └── utils.ts              # cn() Tailwind class merger
+│   ├── AppShell.tsx         # Layout wrapper — auth guard + sidebar
+│   ├── Sidebar.tsx          # Nav + user avatar + sign out
+│   ├── LeadCard.tsx         # Lead display card with Find Match button
+│   ├── PropertyCard.tsx     # Property display with score breakdown
+│   ├── MatchDrawer.tsx      # Sliding panel with scored matches
+│   └── ui/
+│       ├── ToastContainer   # Global toast notifications
+│       ├── Button           # Styled button
+│       └── Input            # Styled input
 ├── hooks/
-│   └── useAuth.tsx           # AuthContext using Supabase Auth
-├── middleware.ts             # Route protection via Supabase session
-└── scripts/
-    └── seedKoramangala.ts    # Seeds 20 real properties from gharpayy.com
-
-supabase/
-└── schema.sql                # Complete PostgreSQL schema + RLS policies
+│   └── useAuth.tsx          # AuthContext — signIn/signUp/signOut/user
+├── lib/
+│   ├── mockData.ts          # 8 leads + 8 properties (mock JSON)
+│   ├── matchEngine.ts       # Scoring algorithm
+│   └── supabase/
+│       └── server.ts        # Server-side Supabase client
+├── middleware.ts             # Route protection (Supabase SSR)
+└── types/
+    └── index.ts             # Lead, Property, MatchResult types
 ```
 
-## Supabase Tables
+---
 
-| Table | Description |
-|-------|-------------|
-| `profiles` | Extends auth.users — fullName, role, phone |
-| `properties` | PG listings with photos, amenities, pricing tiers |
-| `rooms` | Room types within each property |
-| `bookings` | Tenant booking requests |
-| `visits` | Scheduled property visits |
-| `wishlists` | Saved properties per user |
-| `messages` | In-app messaging between tenants & owners |
+## 🧠 Matching Score System
+
+| Criterion | Max Points | Logic |
+|-----------|-----------|-------|
+| **Location** | 40 | Exact area match = 40 · partial city = 15 · none = 0 |
+| **Budget** | 30 | Within range = 30 · slightly outside = 20 or 10 · far outside = 0 |
+| **Room Type** | 20 | Lead's requested type available = 20 · else = 0 |
+| **Gender** | 10 | Exact gender match = 10 · unisex property = 7 · mismatch = 0 |
+| **Total** | **100** | |
+
+**Labels:** Excellent (≥80) · Good (≥55) · Fair (≥35) · Low (<35)
+
+---
+
+## 🔐 Auth Flow
+
+1. User visits any protected route → middleware checks Supabase session
+2. No session → redirect to `/login`
+3. On `signIn` success → redirect to `/dashboard`
+4. `AuthProvider` listens to `onAuthStateChange` for real-time session sync
+5. `profiles` table auto-populated via DB trigger on signup
+
+---
+
+## 🛢️ Supabase Database
+
+Run `supabase/schema.sql` to create:
+
+```sql
+profiles (
+  id          uuid  -- references auth.users
+  full_name   text
+  role        text  -- 'tenant' | 'owner' | 'admin'
+  phone       text
+  avatar_url  text
+  created_at  timestamptz
+  updated_at  timestamptz
+)
+```
+
+RLS ensures users can only read/write their own profile.
+
+---
+
+## 🔧 Connecting to a Real Database
+
+The API routes (`/api/leads`, `/api/properties`, `/api/match`) currently use **mock data** from `src/lib/mockData.ts`. To connect to Supabase:
+
+1. Create `leads` and `properties` tables in Supabase
+2. Import `createClient` from `@/lib/supabase/server` in your API routes
+3. Replace `mockLeads` / `mockProperties` with Supabase queries:
+
+```ts
+const supabase = await createClient();
+const { data: leads } = await supabase.from('leads').select('*');
+```
+
+---
+
+## 📦 Tech Stack
+
+| Layer | Tech |
+|-------|------|
+| Framework | Next.js 14 (App Router) |
+| Auth | Supabase Auth + `@supabase/ssr` |
+| Database | Supabase (PostgreSQL) |
+| Styling | CSS-in-JS (inline) + Tailwind utilities |
+| Icons | Lucide React |
+| Animation | CSS keyframes |
+| Language | TypeScript |
