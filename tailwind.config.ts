@@ -2,19 +2,21 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
-        mono: ["var(--font-geist-mono)", "monospace"],
+        sans: ["DM Sans", "system-ui", "sans-serif"],
         display: ["'Syne'", "sans-serif"],
       },
       colors: {
         brand: {
+          DEFAULT: "#f97316",
+          dark: "#ea580c",
+          light: "#fb923c",
           50: "#fff7ed",
           100: "#ffedd5",
           200: "#fed7aa",
@@ -26,48 +28,22 @@ const config: Config = {
           800: "#9a3412",
           900: "#7c2d12",
         },
-        dark: {
-          900: "#080b12",
-          800: "#0d1117",
-          700: "#161b22",
-          600: "#1c2230",
-          500: "#21262d",
-          400: "#30363d",
-          300: "#484f58",
-          200: "#6e7681",
-          100: "#8b949e",
+        dark: "#1a1208",
+        background: "#fdf9f4",
+        foreground: "#1a1208",
+        muted: {
+          DEFAULT: "#f5f0eb",
+          foreground: "#7a7167",
         },
-      },
-      animation: {
-        "slide-in-right": "slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
-        "fade-in": "fadeIn 0.2s ease-out",
-        "score-fill": "scoreFill 1s cubic-bezier(0.16, 1, 0.3, 1)",
-        "pulse-glow": "pulseGlow 2s ease-in-out infinite",
-      },
-      keyframes: {
-        slideInRight: {
-          "0%": { transform: "translateX(100%)", opacity: "0" },
-          "100%": { transform: "translateX(0)", opacity: "1" },
+        border: "#e8e2d8",
+        accent: {
+          DEFAULT: "#f97316",
+          foreground: "#ffffff",
         },
-        fadeIn: {
-          "0%": { opacity: "0", transform: "translateY(4px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
+        secondary: {
+          DEFAULT: "#f5f0eb",
+          foreground: "#1a1208",
         },
-        scoreFill: {
-          "0%": { width: "0%" },
-          "100%": { width: "var(--score-width)" },
-        },
-        pulseGlow: {
-          "0%, 100%": { boxShadow: "0 0 0 0 rgba(249, 115, 22, 0.2)" },
-          "50%": { boxShadow: "0 0 0 8px rgba(249, 115, 22, 0)" },
-        },
-      },
-      backgroundImage: {
-        "grid-pattern":
-          "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
-      },
-      backgroundSize: {
-        "grid-pattern": "40px 40px",
       },
     },
   },
