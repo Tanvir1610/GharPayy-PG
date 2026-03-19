@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import AppShell from "@/components/AppShell";
 import LeadCard from "@/components/LeadCard";
 import MatchDrawer from "@/components/MatchDrawer";
+import WelcomeBanner from "@/components/WelcomeBanner";
 import { Lead, MatchResult, Property } from "@/types";
 import {
   Search,
@@ -118,10 +119,15 @@ export default function LeadsPage() {
         className="grid-bg"
         style={{ minHeight: "100vh", paddingBottom: 40 }}
       >
+        {/* Welcome Banner — shown once per session after login */}
+        <div style={{ paddingTop: 32 }}>
+          <WelcomeBanner />
+        </div>
+
         {/* Header */}
         <div
           style={{
-            padding: "32px 32px 0",
+            padding: "0 32px 0",
             marginBottom: 28,
           }}
         >

@@ -12,126 +12,112 @@ export default function SignupPage() {
   const [email, setEmail]         = useState('');
   const [password, setPassword]   = useState('');
   const [confirmPw, setConfirmPw] = useState('');
-  const [role, setRole]           = useState<'tenant' | 'owner'>('tenant');
-  const [showPw, setShowPw]       = useState(false);
-  const [loading, setLoading]     = useState(false);
+  const [role, setRole] = useState<'tenant' | 'owner'>('tenant');
+  const [showPw, setShowPw] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { signUp, user, loading: authLoading } = useAuth();
   const router = useRouter();
 
+  // If already logged in, redirect
   useEffect(() => {
-    if (!authLoading && user) router.push('/dashboard');
+    if (!authLoading && user) {
+      router.replace('/leads');
+    }
   }, [user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPw) {
-      toast({ title: "Passwords don't match", variant: 'destructive' }); return;
+      toast({ title: "Passwords don't match", variant: 'destructive' });
+      return;
     }
     if (password.length < 6) {
-      toast({ title: 'Password too short', description: 'Minimum 6 characters.', variant: 'destructive' }); return;
+      toast({ title: 'Password too short', description: 'Minimum 6 characters required.', variant: 'destructive' });
+      return;
     }
     setLoading(true);
     const { error } = await signUp(email, password, fullName, role);
     if (error) {
       toast({ title: 'Signup failed', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Account created! 🎉', description: 'Welcome to GharPayy.', variant: 'success' });
-      router.push('/dashboard');
+      toast({
+        title: '🎉 Account created!',
+        description: 'Welcome to GharPayy — your dashboard is ready.',
+        variant: 'success',
+      });
+      router.push('/leads');
       router.refresh();
     }
     setLoading(false);
   };
 
-  if (authLoading) return null;
-
-  const fieldStyle = {
-    width: '100%', padding: '10px 12px 10px 38px',
-    background: '#161b22', border: '1px solid #30363d', borderRadius: 10,
-    color: '#e6edf3', fontSize: 13, outline: 'none', boxSizing: 'border-box' as const,
-  };
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(140deg, #0a0806 0%, #1a1208 45%, #2a1d0a 100%)' }}>
+        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#f97316', borderTopColor: 'transparent' }} />
+      </div>
+    );
+  }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#080b12', position: 'relative', padding: '24px 16px' }}>
-      <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', top: -80, right: -80, width: 320, height: 320, borderRadius: '50%', background: 'radial-gradient(circle, rgba(249,115,22,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
+    <div
+      className="min-h-screen flex items-center justify-center px-4 py-12 relative"
+      style={{ background: 'linear-gradient(140deg, #0a0806 0%, #1a1208 45%, #2a1d0a 100%)' }}
+    >
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(200,129,58,0.12) 0%, transparent 65%)' }} />
 
-      <div style={{ width: '100%', maxWidth: 460, position: 'relative', zIndex: 10 }}>
-        <div style={{ background: '#0d1117', border: '1px solid #21262d', borderRadius: 20, padding: '40px 36px', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
-
-          {/* Logo */}
-          <div style={{ textAlign: 'center', marginBottom: 28 }}>
-            <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none', marginBottom: 14 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg, #f97316, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Home size={18} color="#fff" />
-              </div>
-              <span className="font-display" style={{ fontSize: 20, fontWeight: 800, color: '#e6edf3' }}>
-                Ghar<span style={{ color: '#f97316' }}>Payy</span>
-              </span>
+      <div className="w-full max-w-[460px] relative z-10">
+        <div className="bg-white rounded-2xl p-10 shadow-2xl">
+          <div className="text-center mb-8">
+            <Link href="/" className="font-display text-3xl font-bold no-underline" style={{ color: '#1a1208' }}>
+              Ghar<span style={{ color: '#f97316' }}>Payy</span>
             </Link>
-            <h2 className="font-display" style={{ fontSize: 22, fontWeight: 800, color: '#e6edf3', marginBottom: 4 }}>Create your account</h2>
-            <p style={{ fontSize: 13, color: '#6e7681' }}>Join GharPayy to manage PG leads</p>
+            <h1 className="font-display text-2xl font-bold mt-4 mb-1" style={{ color: '#1a1208' }}>Create your account</h1>
+            <p className="text-sm" style={{ color: '#7a7167' }}>Find your perfect PG today</p>
           </div>
 
-          {/* Role toggle */}
-          <div style={{ display: 'flex', gap: 4, padding: 4, background: '#161b22', borderRadius: 10, marginBottom: 20, border: '1px solid #21262d' }}>
-            {(['tenant', 'owner'] as const).map(r => (
-              <button key={r} type="button" onClick={() => setRole(r)}
-                style={{ flex: 1, padding: '8px 0', borderRadius: 7, border: role === r ? '1px solid rgba(249,115,22,0.3)' : '1px solid transparent', background: role === r ? 'rgba(249,115,22,0.12)' : 'transparent', color: role === r ? '#f97316' : '#6e7681', fontSize: 13, fontWeight: role === r ? 600 : 400, cursor: 'pointer', transition: 'all 0.15s' }}>
-                {r === 'tenant' ? '🏠 Looking for PG' : '🏢 List my PG'}
+          {/* Role picker */}
+          <div className="flex gap-2 mb-5 p-1 rounded-lg" style={{ background: '#f8f5f1' }}>
+            {(['tenant', 'owner'] as const).map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setRole(r)}
+                className="flex-1 py-2 rounded-md text-sm font-semibold transition-all capitalize"
+                style={{
+                  background: role === r ? '#fff' : 'transparent',
+                  color: role === r ? '#f97316' : '#7a7167',
+                  boxShadow: role === r ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                {r === 'tenant' ? 'Looking for PG' : 'List my PG'}
               </button>
             ))}
           </div>
 
-          <form onSubmit={handleSubmit}>
-            {/* Full name */}
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#8b949e', marginBottom: 6 }}>Full Name</label>
-              <div style={{ position: 'relative' }}>
-                <User size={14} color="#484f58" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                <input type="text" required value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" style={fieldStyle}
-                  onFocus={e => (e.target.style.borderColor = 'rgba(249,115,22,0.6)')}
-                  onBlur={e => (e.target.style.borderColor = '#30363d')} />
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input id="fullName" label="Full Name" placeholder="Your full name" value={fullName}
+              onChange={(e) => setFullName(e.target.value)} icon={User} required />
+            <Input id="email" type="email" label="Email" placeholder="you@example.com" value={email}
+              onChange={(e) => setEmail(e.target.value)} icon={Mail} required />
+
+            <div className="relative">
+              <Input id="password" type={showPw ? 'text' : 'password'} label="Password"
+                placeholder="Min. 6 characters" value={password}
+                onChange={(e) => setPassword(e.target.value)} icon={Lock}
+                className="pr-10" required />
+              <button type="button" onClick={() => setShowPw((v) => !v)}
+                className="absolute right-3 top-[34px]" style={{ color: '#7a7167' }}>
+                {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
 
-            {/* Email */}
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#8b949e', marginBottom: 6 }}>Email</label>
-              <div style={{ position: 'relative' }}>
-                <Mail size={14} color="#484f58" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" style={fieldStyle}
-                  onFocus={e => (e.target.style.borderColor = 'rgba(249,115,22,0.6)')}
-                  onBlur={e => (e.target.style.borderColor = '#30363d')} />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#8b949e', marginBottom: 6 }}>Password</label>
-              <div style={{ position: 'relative' }}>
-                <Lock size={14} color="#484f58" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                <input type={showPw ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 6 characters" style={{ ...fieldStyle, paddingRight: 40 }}
-                  onFocus={e => (e.target.style.borderColor = 'rgba(249,115,22,0.6)')}
-                  onBlur={e => (e.target.style.borderColor = '#30363d')} />
-                <button type="button" onClick={() => setShowPw(v => !v)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#484f58', padding: 0 }}>
-                  {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
-              </div>
-            </div>
-
-            {/* Confirm password */}
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#8b949e', marginBottom: 6 }}>Confirm Password</label>
-              <div style={{ position: 'relative' }}>
-                <Lock size={14} color="#484f58" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                <input type="password" required value={confirmPw} onChange={e => setConfirmPw(e.target.value)} placeholder="Re-enter password" style={fieldStyle}
-                  onFocus={e => (e.target.style.borderColor = confirmPw && password !== confirmPw ? 'rgba(248,81,73,0.6)' : 'rgba(249,115,22,0.6)')}
-                  onBlur={e => (e.target.style.borderColor = '#30363d')} />
-              </div>
-              {confirmPw && password !== confirmPw && (
-                <p style={{ fontSize: 11, color: '#f85149', marginTop: 4 }}>Passwords do not match</p>
-              )}
-            </div>
+            <Input id="confirm" type="password" label="Confirm Password"
+              placeholder="Re-enter password" value={confirmPw}
+              onChange={(e) => setConfirmPw(e.target.value)} icon={Lock} required />
 
             <button type="submit" disabled={loading || (!!confirmPw && password !== confirmPw)}
               style={{ width: '100%', padding: '12px', background: loading ? '#ea580c99' : 'linear-gradient(135deg, #f97316, #ea580c)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
@@ -143,14 +129,14 @@ export default function SignupPage() {
             </button>
           </form>
 
-          <p style={{ textAlign: 'center', fontSize: 12, color: '#484f58', marginTop: 16 }}>
+          <p className="text-center text-xs mt-4" style={{ color: '#7a7167' }}>
             By signing up you agree to our{' '}
-            <Link href="#" style={{ color: '#f97316', textDecoration: 'none' }}>Terms</Link> &amp;{' '}
-            <Link href="#" style={{ color: '#f97316', textDecoration: 'none' }}>Privacy Policy</Link>
+            <Link href="/terms" style={{ color: '#f97316' }}>Terms</Link> and{' '}
+            <Link href="/privacy" style={{ color: '#f97316' }}>Privacy Policy</Link>
           </p>
-          <p style={{ textAlign: 'center', fontSize: 13, color: '#6e7681', marginTop: 12 }}>
+          <p className="text-center text-sm mt-3" style={{ color: '#7a7167' }}>
             Already have an account?{' '}
-            <Link href="/login" style={{ color: '#f97316', fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>
+            <Link href="/login" className="font-semibold" style={{ color: '#f97316' }}>Sign in</Link>
           </p>
         </div>
       </div>
